@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>용용이네 & 밧디글라 과일 주문</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gaegu:wght@700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+  :root {
+    --cream: #fdf7ea; --green: #7cc242; --green-dk: #4f9a25; --orange: #f4923a; --orange-dk: #c9711f;
+    --pink: #e8457e; --brown: #2b1d12; --muted: #8a7a62; --line: #eadfc8; --ph: #b8a994;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; background: var(--cream);
+    background-image: radial-gradient(#e9dfc6 1.2px, transparent 1.2px); background-size: 18px 18px; color: var(--brown); }
+  .wrap { max-width: 430px; margin: 0 auto; padding: 48px 20px 40px; }
+  .jua { font-family: 'Jua', 'Noto Sans KR', sans-serif; font-weight: 400; }
+  .gaegu { font-family: 'Gaegu', 'Noto Sans KR', sans-serif; font-weight: 700; }
+  header { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+  header .brand { color: var(--orange); font-size: 18px; }
+  .mascots { max-width: 60%; height: auto; }
+  header h1 { margin: 0; font-size: 38px; line-height: 1.1; color: var(--green-dk); text-shadow: 2px 2px 0 #fff; }
+  header p { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
+  h2 { margin: 28px 0 12px; font-size: 20px; color: var(--green-dk); }
+  .items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .item { position: relative; background: #fff; border: 3px solid #fff; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 8px;
+    box-shadow: 0 5px 0 var(--line); cursor: pointer; }
+  .item input { position: absolute; opacity: 0; pointer-events: none; }
+  .item:has(input:checked) { border-color: var(--orange); box-shadow: 0 5px 0 #f7d2ad; }
+  .item:has(input:checked) .price { color: var(--orange); }
+  .item .icon { width: 48px; height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+  .item .name { font-size: 16px; font-weight: 700; }
+  .item .price { font-size: 14px; font-weight: 500; color: var(--muted); }
+  .item .season { align-self: flex-start; font-size: 13px; padding: 2px 8px; border-radius: 999px; background: #f2f0ea; color: var(--muted); }
+  .item .season.now { background: #eaf6df; color: var(--green-dk); }
+  .qty { display: flex; align-items: center; justify-content: space-between; background: #fff; border-radius: 22px; padding: 14px 16px; box-shadow: 0 5px 0 var(--line); margin-top: 24px; }
+  .qty .label { font-size: 16px; font-weight: 700; }
+  .qty .ctl { display: flex; align-items: center; gap: 16px; }
+  .qty button { width: 44px; height: 44px; border: 0; border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .qty .minus { background: #f2f0ea; color: var(--muted); }
+  .qty .plus { background: var(--green); color: #fff; }
+  .qty output { font-size: 24px; min-width: 24px; text-align: center; }
+  input[type=text], input[type=tel], textarea { width: 100%; background: #fff; border: 2px solid var(--line); border-radius: 16px; padding: 14px 16px;
+    font: inherit; font-size: 16px; color: var(--brown); margin-bottom: 12px; }
+  input::placeholder, textarea::placeholder { color: var(--ph); }
+  textarea { min-height: 84px; resize: vertical; }
+  input:read-only { background: #f7f2e6; }
+  .addr-row { display: flex; gap: 8px; }
+  .addr-row input { flex: 1; }
+  .find { flex: 0 0 auto; margin-bottom: 12px; border: 0; border-radius: 16px; padding: 0 18px; background: var(--green); color: #fff; font-size: 17px; cursor: pointer; }
+  .submit { width: 100%; border: 0; background: var(--orange); border-radius: 22px; padding: 18px; display: flex; align-items: center; justify-content: center; gap: 10px;
+    box-shadow: 0 6px 0 var(--orange-dk); color: #fff; font-size: 22px; cursor: pointer; margin-top: 12px; }
+  .submit:disabled { opacity: .6; }
+  .foot { text-align: center; font-size: 15px; color: var(--muted); margin-top: 16px; }
+  .foot a { color: var(--orange); }
+  /* 완료 화면 */
+  #done { display: none; min-height: 100vh; background: var(--green); background-image: radial-gradient(#8fd058 1.5px, transparent 1.5px); background-size: 20px 20px;
+    padding: 60px 32px; flex-direction: column; align-items: center; justify-content: center; gap: 28px; text-align: center; }
+  #done h1 { margin: 0; font-size: 34px; color: #fff; text-shadow: 2px 2px 0 var(--green-dk); }
+  #done p { margin: 8px 0 0; color: #f2fbe8; font-size: 15px; line-height: 1.6; }
+  .card { background: var(--cream); border-radius: 22px; padding: 18px 20px; width: 100%; max-width: 360px; box-shadow: 0 5px 0 var(--green-dk); text-align: left; font-size: 15px; }
+  .card div { display: flex; justify-content: space-between; margin: 6px 0; }
+  .card span:first-child { color: var(--muted); }
+  .card span:last-child { font-weight: 700; }
+  .card .acct { display: block; margin-top: 12px; padding-top: 12px; border-top: 2px dashed var(--line); font-size: 18px; text-align: center; color: var(--orange-dk); }
+  .home { background: var(--orange); border-radius: 22px; padding: 16px; width: 100%; max-width: 360px; box-shadow: 0 6px 0 var(--orange-dk); color: #fff; font-size: 18px; border: 0; cursor: pointer; }
+  body.done #order { display: none; } body.done #done { display: flex; }
+</style>
+</head>
+<body>
+
+<form id="order" class="wrap">
+  <header>
+    <img class="mascots" src="img/pair.png" alt="용용이와 용과" width="220">
+    <div>
+      <div class="brand gaegu">용용이네 &amp; 밧디글라</div>
+      <h1 class="jua">제주 농장에서<br>바로 보내드려요</h1>
+      <p>주문하시면 담당자가 확인하고 문자로 안내드려요</p>
+    </div>
+  </header>
+
+  <h2 class="jua">무엇을 드릴까요?</h2>
+  <div class="items" id="items"></div>
+
+  <div class="qty">
+    <span class="label">수량</span>
+    <div class="ctl">
+      <button type="button" class="minus" data-d="-1" aria-label="수량 줄이기"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+      <output class="jua" id="qty">1</output>
+      <button type="button" class="plus" data-d="1" aria-label="수량 늘리기"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+    </div>
+  </div>
+
+  <h2 class="jua">어디로 보내드릴까요?</h2>
+  <input type="text" name="name" placeholder="이름" required autocomplete="name" minlength="2" maxlength="10" pattern="[가-힣a-zA-Z]{2,10}" title="한글 또는 영문 2~10자">
+  <input type="tel" name="phone" id="phone" placeholder="연락처 (010-0000-0000)" required autocomplete="tel" inputmode="numeric" maxlength="13" pattern="01[016789]-[0-9]{3,4}-[0-9]{4}" title="휴대폰 번호 형식 (010-0000-0000)">
+  <div class="addr-row">
+    <input type="text" name="zip" id="zip" placeholder="우편번호" readonly required>
+    <button type="button" class="find jua" id="find">주소 찾기</button>
+  </div>
+  <input type="text" name="address" id="address" placeholder="주소 찾기를 눌러 주세요" readonly required>
+  <input type="text" name="address2" id="address2" placeholder="상세 주소 (동·호수)" maxlength="40" autocomplete="off">
+  <textarea name="memo" placeholder="요청사항 (선택)" maxlength="200"></textarea>
+  <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
+
+  <button class="submit jua" id="submit">주문하기
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+  </button>
+  <p class="foot gaegu">체험농장 문의는 인스타 <a href="https://www.instagram.com/jeju_yy2ne/">@jeju_yy2ne</a> 로!</p>
+</form>
+
+<section id="done">
+  <img class="mascots" src="img/pair.png" alt="용용이와 용과" width="240">
+  <div>
+    <h1 class="jua">주문이 접수됐어요!</h1>
+    <p>아래 계좌로 입금해 주시면<br>담당자가 확인한 뒤 안내 문자를 보내드려요</p>
+  </div>
+  <div class="card">
+    <div><span>품목</span><span id="d-item"></span></div>
+    <div><span>받는 분</span><span id="d-name"></span></div>
+    <div><span>연락처</span><span id="d-phone"></span></div>
+    <div><span>입금액</span><span id="d-total"></span></div>
+    <strong class="acct jua" id="d-acct"></strong>
+  </div>
+  <button class="home jua" onclick="location.reload()">처음으로</button>
+</section>
+
+<script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script>
+// ===== 설정: 여기만 바꾸면 됨 =====
+const API_URL = "https://script.google.com/macros/s/AKfycbxp5WRsN4Fp7ckoolRQMujKjvYyS2Tcv097gAmzfzJeaApfny6n_UJqAOIBNKVbQNuv/exec";
+const ACCOUNT = "[은행] [계좌번호] [예금주]";          // 무통장 입금 계좌
+const ITEMS = [
+  { id: "hallabong", name: "한라봉 3kg", price: 0, months: [2],        img: "img/orange.png", bg: "#ffe8d0" },
+  { id: "peach",     name: "복숭아 2kg", price: 0, months: [6],        color: "#f7a1b5", bg: "#ffe3ea" },
+  { id: "dragon",    name: "레드용과 2kg", price: 0, months: [7,8,9,10], img: "img/dragon.png", bg: "#fde0ec" },
+  { id: "tangerine", name: "감귤 5kg",   price: 0, months: [11,12],    color: "#f8b53a", bg: "#fff3c4" },
+];
+// ==================================
+
+const month = new Date().getMonth() + 1;
+const won = n => n.toLocaleString("ko-KR") + "원";
+const seasonLabel = m => (m.length > 1 ? `${m[0]}~${m[m.length-1]}월` : `${m[0]}월`) + " 제철";
+const fruitSvg = (c) => `<svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="14" r="8" fill="${c}"/><path d="M12 5V2" stroke="#7cc242" stroke-width="2" stroke-linecap="round"/><path d="M12 4c2-1 4 0 5 1" fill="#7cc242"/></svg>`;
+
+document.getElementById("items").innerHTML = ITEMS.map((it, i) => `
+  <label class="item">
+    <input type="radio" name="item" value="${it.id}" ${i === 0 ? "checked" : ""} required>
+    <div class="icon" style="background:${it.bg}">${it.img ? `<img src="${it.img}" alt="" width="40" height="40" style="object-fit:contain">` : fruitSvg(it.color)}</div>
+    <div class="name">${it.name}</div>
+    <div class="price">${it.price ? won(it.price) : "[가격]원"}</div>
+    <div class="season ${it.months.includes(month) ? "now" : ""}">${seasonLabel(it.months)}</div>
+  </label>`).join("");
+
+let qty = 1;
+document.querySelectorAll(".qty button").forEach(b => b.onclick = () => {
+  qty = Math.max(1, qty + Number(b.dataset.d));
+  document.getElementById("qty").textContent = qty;
+});
+
+// 전화번호: 숫자만 받고 010-0000-0000 형태로 자동 하이픈
+document.getElementById("phone").oninput = e => {
+  const d = e.target.value.replace(/\D/g, "").slice(0, 11);
+  e.target.value = d.replace(/^(\d{3})(\d{0,4})(\d{0,4}).*/, (_, a, b, c) => [a, b, c].filter(Boolean).join("-"));
+};
+
+// 주소: 카카오 우편번호 서비스 (실제 존재하는 주소만 선택 가능)
+document.getElementById("find").onclick = () => new daum.Postcode({
+  oncomplete: d => {
+    document.getElementById("zip").value = d.zonecode;
+    document.getElementById("address").value = d.roadAddress || d.jibunAddress;
+    document.getElementById("address2").focus();
+  },
+}).open();
+
+const hasUrl = s => /https?:\/\/|www\.|\.(com|net|kr|io|ly)\b/i.test(s);
+
+const form = document.getElementById("order");
+form.onsubmit = async e => {
+  e.preventDefault();
+  const fd = new FormData(form);
+  if (fd.get("website")) return;                       // 봇 전용 숨은 칸이 채워짐 → 조용히 무시
+  const memo = fd.get("memo").trim();
+  if (hasUrl(memo) || hasUrl(fd.get("name"))) { alert("요청사항에 링크는 넣을 수 없어요."); return; }
+  const btn = document.getElementById("submit");
+  btn.disabled = true;
+  const item = ITEMS.find(i => i.id === fd.get("item"));
+  const order = {
+    name: fd.get("name").trim(), phone: fd.get("phone").trim(),
+    address: `(${fd.get("zip")}) ${fd.get("address")} ${fd.get("address2").trim()}`.trim(),
+    memo, item: item.name, qty, total: item.price * qty,
+  };
+  try {
+    // ponytail: text/plain로 보내야 Apps Script가 CORS preflight 없이 받음
+    await fetch(API_URL, { method: "POST", body: JSON.stringify(order), headers: { "Content-Type": "text/plain" } });
+  } catch (err) {
+    alert("전송에 실패했어요. 잠시 후 다시 시도해 주세요."); btn.disabled = false; return;
+  }
+  document.getElementById("d-item").textContent = `${order.item} × ${qty}`;
+  document.getElementById("d-name").textContent = order.name;
+  document.getElementById("d-phone").textContent = order.phone;
+  document.getElementById("d-total").textContent = item.price ? won(order.total) : "[가격 미정]";
+  document.getElementById("d-acct").textContent = ACCOUNT;
+  document.body.classList.add("done");
+  window.scrollTo(0, 0);
+};
+</script>
+</body>
+</html>
