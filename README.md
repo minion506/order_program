@@ -59,3 +59,4 @@ index.html (고객 주문, 모바일 웹)  →  Apps Script doPost  →  구글 
 | 계좌번호 | `index.html` → `ACCOUNT` |
 | 담당자 번호·메일 | `Code.gs` → `MANAGER_PHONE`, `MANAGER_EMAIL` (고친 뒤 새 버전 배포) |
 | 문자 문구 | `Code.gs` → `sendSms(...)` 호출부 (고친 뒤 새 버전 배포) |
+| 개인정보 처리방침 | `privacy.html` → `[택배사]`, `[이름]`, `[전화번호]`, `[이메일]`, `[시행일]` |
