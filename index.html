@@ -55,6 +55,8 @@
   .submit { width: 100%; border: 0; background: var(--orange); border-radius: 22px; padding: 18px; display: flex; align-items: center; justify-content: center; gap: 10px;
     box-shadow: 0 6px 0 var(--orange-dk); color: #fff; font-size: 22px; cursor: pointer; margin-top: 12px; }
   .submit:disabled { opacity: .6; }
+  .notice { font-size: 13px; color: var(--muted); line-height: 1.5; margin: 4px 4px 0; }
+  .notice a { color: var(--orange-dk); }
   .foot { text-align: center; font-size: 15px; color: var(--muted); margin-top: 16px; }
   .foot a { color: var(--orange); }
   /* 완료 화면 */
@@ -113,6 +115,7 @@
   <textarea name="memo" placeholder="요청사항 (선택)" maxlength="200"></textarea>
   <input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">
 
+  <p class="notice">입력하신 정보는 주문 확인과 배송에만 사용되며, 배송을 위해 택배사에 전달됩니다. <a href="privacy.html" target="_blank">개인정보 처리방침</a></p>
   <button class="submit jua" id="submit">주문하기
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
   </button>
