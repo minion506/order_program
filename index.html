@@ -49,6 +49,8 @@
   .same input { width: 20px; height: 20px; accent-color: var(--green); }
   .addr-row { display: flex; gap: 8px; }
   .addr-row input { flex: 1; }
+  #postcode { height: 460px; border: 2px solid var(--line); border-radius: 16px; overflow: hidden; margin-bottom: 12px; }
+  #postcode[hidden] { display: none; }
   .find { flex: 0 0 auto; margin-bottom: 12px; border: 0; border-radius: 16px; padding: 0 18px; background: var(--green); color: #fff; font-size: 17px; cursor: pointer; }
   .submit { width: 100%; border: 0; background: var(--orange); border-radius: 22px; padding: 18px; display: flex; align-items: center; justify-content: center; gap: 10px;
     box-shadow: 0 6px 0 var(--orange-dk); color: #fff; font-size: 22px; cursor: pointer; margin-top: 12px; }
@@ -105,6 +107,7 @@
     <input type="text" name="zip" id="zip" placeholder="우편번호" readonly required>
     <button type="button" class="find jua" id="find">주소 찾기</button>
   </div>
+  <div id="postcode" hidden></div>
   <input type="text" name="address" id="address" placeholder="받는 분 주소 (주소 찾기를 눌러 주세요)" readonly required>
   <input type="text" name="address2" id="address2" placeholder="상세 주소 (동·호수)" maxlength="40" autocomplete="off">
   <textarea name="memo" placeholder="요청사항 (선택)" maxlength="200"></textarea>
@@ -172,32 +175,43 @@ document.querySelectorAll("input.tel").forEach(el => el.oninput = e => {
   e.target.value = d.replace(/^(\d{3})(\d{0,4})(\d{0,4}).*/, (_, a, b, c) => [a, b, c].filter(Boolean).join("-"));
 });
 
-// "보내는 분과 같아요" 체크 시 받는 분 이름·연락처 복사
-document.getElementById("same").onchange = e => {
-  const on = e.target.checked;
-  ["name", "phone"].forEach((id, i) => {
-    const to = document.getElementById(id);
-    to.readOnly = on;
-    if (on) to.value = form[["sender", "senderPhone"][i]].value;
-  });
-};
+// "보내는 분과 같아요" 체크 중에는 받는 분 이름·연락처가 보내는 분을 계속 따라감
+const same = document.getElementById("same");
+const syncSame = () => ["name", "phone"].forEach((id, i) => {
+  const to = document.getElementById(id);
+  to.readOnly = same.checked;
+  if (same.checked) to.value = form[["sender", "senderPhone"][i]].value;
+});
+same.onchange = syncSame;
 
 // 주소: 카카오 우편번호 서비스 (실제 존재하는 주소만 선택 가능)
-document.getElementById("find").onclick = () => new daum.Postcode({
-  oncomplete: d => {
-    document.getElementById("zip").value = d.zonecode;
-    document.getElementById("address").value = d.roadAddress || d.jibunAddress;
-    document.getElementById("address2").focus();
-  },
-}).open();
+// 팝업(.open)은 차단기·카톡/인스타 인앱 브라우저에서 막힘 → 페이지 안에 embed, 버튼 다시 누르면 닫힘
+const pc = document.getElementById("postcode");
+document.getElementById("find").onclick = () => {
+  pc.hidden = !pc.hidden;
+  if (pc.hidden) return;
+  pc.innerHTML = "";
+  new daum.Postcode({
+    width: "100%", height: "100%",
+    oncomplete: d => {
+      document.getElementById("zip").value = d.zonecode;
+      document.getElementById("address").value = d.roadAddress || d.jibunAddress;
+      pc.hidden = true;
+      document.getElementById("address2").focus();
+    },
+  }).embed(pc);
+};
 
 const hasUrl = s => /https?:\/\/|www\.|\.(com|net|kr|io|ly)\b/i.test(s);
 
 const form = document.getElementById("order");
+form.addEventListener("input", syncSame);             // 전화번호 하이픈 처리 후 복사됨 (버블링 순서)
 form.onsubmit = async e => {
   e.preventDefault();
   const fd = new FormData(form);
   if (fd.get("website")) return;                       // 봇 전용 숨은 칸이 채워짐 → 조용히 무시
+  // readonly 칸은 브라우저가 required 검사를 건너뜀 → 직접 확인
+  if (!fd.get("zip") || !fd.get("address")) { alert("주소 찾기를 눌러 주소를 선택해 주세요."); return; }
   const memo = fd.get("memo").trim();
   if (hasUrl(memo) || hasUrl(fd.get("name")) || hasUrl(fd.get("sender"))) { alert("요청사항에 링크는 넣을 수 없어요."); return; }
   const btn = document.getElementById("submit");
@@ -211,9 +225,13 @@ form.onsubmit = async e => {
   };
   try {
     // ponytail: text/plain로 보내야 Apps Script가 CORS preflight 없이 받음
-    await fetch(API_URL, { method: "POST", body: JSON.stringify(order), headers: { "Content-Type": "text/plain" } });
+    const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(order), headers: { "Content-Type": "text/plain" } });
+    const text = (await res.text()).trim();
+    if (text !== "ok") throw new Error(text);           // 서버 검증 거절 ("rejected: ...")
   } catch (err) {
-    alert("전송에 실패했어요. 잠시 후 다시 시도해 주세요."); btn.disabled = false; return;
+    alert(/dup/.test(err.message) ? "방금 같은 번호로 주문이 들어왔어요. 1분 뒤에 다시 시도해 주세요."
+                                  : "주문이 접수되지 않았어요. 입력 내용을 확인하고 다시 시도해 주세요.");
+    btn.disabled = false; return;
   }
   document.getElementById("d-item").textContent = `${order.item} × ${qty}`;
   document.getElementById("d-sender").textContent = `${order.sender} (${order.senderPhone})`;
