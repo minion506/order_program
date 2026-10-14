@@ -114,6 +114,7 @@
   .card span:last-child { font-weight: 700; text-align: right; }
   .card .acct { display: block; margin-top: 12px; padding-top: 12px; border-top: 2px dashed var(--line); font-size: 18px; text-align: center; color: var(--orange-dk); }
   .card .ship { display: block; margin-top: 8px; font-size: 13px; color: var(--muted); text-align: center; word-break: keep-all; }
+  .card .ship a { color: var(--orange-dk); }
   .home { background: var(--orange); border-radius: 22px; padding: 16px; width: 100%; max-width: 360px; box-shadow: 0 6px 0 var(--orange-dk); color: #fff; font-size: 18px; border: 0; cursor: pointer; }
   body.done #order { display: none; } body.done #done { display: flex; }
 </style>
@@ -229,7 +230,7 @@
     <div><span>받는 분</span><span id="d-name"></span></div>
     <div><span>입금액</span><span id="d-total"></span></div>
     <strong class="acct jua" id="d-acct"></strong>
-    <small class="ship">입금 확인·배송 문자는 따로 보내드리지 않아요</small>
+    <small class="ship">입금 확인 및 배송 문자는 별도로 발송되지 않으며, 해당 사항과 관련한 문의사항은 용용이네 인스타 DM(<a href="https://www.instagram.com/jeju_yy2ne/">@jeju_yy2ne</a>) 또는 <a href="sms:01068885277">010-6888-5277</a>로 문자 주세요.</small>
   </div>
   <button class="home jua" onclick="location.reload()">처음으로</button>
 </section>
