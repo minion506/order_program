@@ -67,6 +67,25 @@
   .notice a { color: var(--orange-dk); }
   .foot { text-align: center; font-size: 15px; color: var(--muted); margin-top: 16px; }
   .foot a { color: var(--orange); }
+  /* 주문 확인 창 */
+  #confirm { border: 0; border-radius: 22px; padding: 0; width: min(92vw, 400px); background: var(--cream); color: var(--brown); }
+  #confirm::backdrop { background: rgba(43, 29, 18, .5); }
+  .confirm { padding: 20px 20px 0; }
+  .confirm h2 { margin: 0 0 12px; }
+  .confirm .card { max-width: none; box-shadow: 0 5px 0 var(--line); }
+  .confirm .r { margin: 10px 0 0; padding-top: 10px; border-top: 2px dashed var(--line); line-height: 1.5; word-break: keep-all; }
+  .confirm .r:first-of-type { margin-top: 12px; }
+  .confirm .r b { display: block; }
+  /* 받는 분이 많아 길어져도 합계·버튼은 화면 아래에 고정 */
+  .bar { position: sticky; bottom: 0; margin: 12px -20px 0; padding: 12px 20px 20px; background: var(--cream); box-shadow: 0 -10px 14px -10px rgba(43, 29, 18, .25); }
+  .sum { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 15px; }
+  .sum strong { font-size: 20px; color: var(--orange-dk); }
+  .btns { display: flex; gap: 10px; }
+  .btns button { flex: 1; margin: 0; padding: 16px; font-size: 18px; }
+  .edit { border: 0; border-radius: 22px; background: #fff; box-shadow: 0 6px 0 var(--line); color: var(--muted); cursor: pointer; }
+  @media (max-width: 480px) {   /* 휴대폰: 팝업 대신 전체 화면 */
+    #confirm { width: 100%; max-width: none; height: 100vh; height: 100dvh; max-height: none; border-radius: 0; }
+  }
   /* 완료 화면 */
   #done { display: none; min-height: 100vh; background: var(--green); background-image: radial-gradient(#8fd058 1.5px, transparent 1.5px); background-size: 20px 20px;
     padding: 60px 32px; flex-direction: column; align-items: center; justify-content: center; gap: 28px; text-align: center; }
@@ -111,6 +130,21 @@
   </button>
   <p class="foot gaegu">체험농장 문의는 인스타 <a href="https://www.instagram.com/jeju_yy2ne/">@jeju_yy2ne</a> 로!</p>
 </form>
+
+<!-- 주문하기 → 입력 내용 확인 → "이대로 주문하기"를 눌러야 전송 -->
+<dialog id="confirm">
+  <form method="dialog" class="confirm">
+    <h2 class="jua">주문 내용을 확인해 주세요</h2>
+    <div class="card" id="c-card"></div>
+    <div class="bar">
+      <div class="sum"><span id="c-item"></span><strong id="c-total"></strong></div>
+      <div class="btns">
+        <button class="edit jua">수정하기</button>
+        <button type="button" id="send" class="submit jua">이대로 주문하기</button>
+      </div>
+    </div>
+  </form>
+</dialog>
 
 <!-- 받는 분 한 명 분량. "+ 다른 분께도 보내기"를 누를 때마다 복제됨 -->
 <template id="tpl">
@@ -238,8 +272,11 @@ form.addEventListener("click", e => {
 });
 
 const hasUrl = s => /https?:\/\/|www\.|\.(com|net|kr|io|ly)\b/i.test(s);
+const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const dlg = document.getElementById("confirm");
+let pending;   // 확인 창에 떠 있는 주문
 
-form.onsubmit = async e => {
+form.onsubmit = e => {
   e.preventDefault();
   const fd = new FormData(form);
   if (fd.get("website")) return;                       // 봇 전용 숨은 칸이 채워짐 → 조용히 무시
@@ -252,11 +289,23 @@ form.onsubmit = async e => {
   });
   const sender = fd.get("sender").trim(), senderPhone = fd.get("senderPhone").trim();
   if (hasUrl(sender) || recipients.some(r => hasUrl(r.name) || hasUrl(r.memo))) { alert("요청사항에 링크는 넣을 수 없어요."); return; }
-  const btn = document.getElementById("submit");
-  btn.disabled = true;
   const item = ITEMS.find(i => i.id === fd.get("item"));
   const boxes = recipients.reduce((s, r) => s + r.qty, 0);
-  const order = { sender, senderPhone, item: item.name, price: item.price, recipients };   // 받는 분 한 명 = 시트 한 행
+  pending = { item, boxes, order: { sender, senderPhone, item: item.name, price: item.price, recipients } };   // 받는 분 한 명 = 시트 한 행
+  document.getElementById("c-item").textContent = `${item.name} × ${boxes}`;
+  document.getElementById("c-total").textContent = item.price ? won(item.price * boxes) : "[가격 미정]";
+  document.getElementById("c-card").innerHTML = `
+    <div><span>보내는 분</span><span>${esc(sender)} (${senderPhone})</span></div>
+    ${recipients.map((r, i) => `<p class="r"><b>받는 분${recipients.length > 1 ? " " + (i + 1) : ""} · ${esc(r.name)} ×${r.qty}</b>${r.phone}<br>${esc(r.address)}${r.memo ? "<br>요청: " + esc(r.memo) : ""}</p>`).join("")}`;
+  dlg.showModal();
+};
+
+// "이대로 주문하기"를 눌렀을 때만 전송. 수정하기·ESC는 입력을 그대로 둔 채 창만 닫힘
+document.getElementById("send").onclick = async () => {
+  dlg.close();
+  const { item, boxes, order } = pending;
+  const btn = document.getElementById("submit");
+  btn.disabled = true;
   try {
     // ponytail: text/plain로 보내야 Apps Script가 CORS preflight 없이 받음
     const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(order), headers: { "Content-Type": "text/plain" } });
@@ -268,8 +317,8 @@ form.onsubmit = async e => {
     btn.disabled = false; return;
   }
   document.getElementById("d-item").textContent = `${order.item} × ${boxes}`;
-  document.getElementById("d-sender").textContent = `${sender} (${senderPhone})`;
-  document.getElementById("d-name").textContent = recipients.map(r => `${r.name} ×${r.qty}`).join(", ");
+  document.getElementById("d-sender").textContent = `${order.sender} (${order.senderPhone})`;
+  document.getElementById("d-name").textContent = order.recipients.map(r => `${r.name} ×${r.qty}`).join(", ");
   document.getElementById("d-total").textContent = item.price ? won(item.price * boxes) : "[가격 미정]";
   document.getElementById("d-acct").textContent = ACCOUNT;
   document.body.classList.add("done");
