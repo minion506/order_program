@@ -22,7 +22,7 @@
   header h1 { margin: 0; font-size: 38px; line-height: 1.1; color: var(--green-dk); text-shadow: 2px 2px 0 #fff; }
   header p { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
   h2 { margin: 28px 0 12px; font-size: 20px; color: var(--green-dk); }
-  .items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 28px; }
   .item { position: relative; background: #fff; border: 3px solid #fff; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 8px;
     box-shadow: 0 5px 0 var(--line); cursor: pointer; }
   .item:only-child { grid-column: 1 / -1; }
@@ -40,7 +40,10 @@
   .qty button { width: 44px; height: 44px; border: 0; border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
   .qty .minus { background: #f2f0ea; color: var(--muted); }
   .qty .plus { background: var(--green); color: #fff; }
-  .qty output { font-size: 24px; min-width: 24px; text-align: center; }
+  .qty input { width: 52px; padding: 4px 0; border: 2px solid transparent; border-radius: 12px; background: none; font-size: 24px; color: var(--brown); text-align: center;
+    appearance: textfield; -moz-appearance: textfield; }
+  .qty input:focus { outline: none; border-color: var(--green); background: #fff; }
+  .qty input::-webkit-inner-spin-button, .qty input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
   input[type=text], input[type=tel], textarea { width: 100%; background: #fff; border: 2px solid var(--line); border-radius: 16px; padding: 14px 16px;
     font: inherit; font-size: 16px; color: var(--brown); margin-bottom: 12px; }
   input::placeholder, textarea::placeholder { color: var(--ph); }
@@ -50,6 +53,20 @@
   .same input { width: 20px; height: 20px; accent-color: var(--green); }
   .addr-row { display: flex; gap: 8px; }
   .addr-row input { flex: 1; }
+  /* ⓘ 입력 안내: "보내는 분"·"받는 분" 제목 옆 아이콘 → 안내 창 (브라우저 기본 popover, 바깥 누르면 닫힘) */
+  .i { position: relative; width: 18px; height: 18px; margin-left: 6px; padding: 0; border: 0; border-radius: 50%; background: var(--ph); color: #fff;
+    font: 700 12px/18px Georgia, serif; text-align: center; cursor: pointer; vertical-align: middle; }
+  .i::after { content: ""; position: absolute; inset: -13px; }   /* 손가락으로 누르기 쉽게 터치 영역 44px */
+  .recipient h2 .i { margin-right: auto; }                         /* 빼기(×) 버튼은 오른쪽 끝에 그대로 */
+  .tip { border: 0; border-radius: 18px; padding: 0; width: min(88vw, 360px); background: #fff; color: var(--brown); box-shadow: 0 8px 0 var(--line); }
+  .tip::backdrop { background: rgba(43, 29, 18, .45); }
+  .tip h3 { margin: 0; padding: 14px 12px 14px 20px; background: var(--green-dk); color: #fff; font-size: 18px; display: flex; justify-content: space-between; align-items: center; }
+  .tip h3 button { width: 36px; height: 36px; border: 0; background: none; color: #fff; font-size: 26px; line-height: 1; cursor: pointer; }
+  .tip dl { margin: 0; padding: 16px 20px 20px; font-size: 15px; line-height: 1.6; word-break: keep-all; }
+  .tip dt { margin-top: 14px; font-weight: 700; color: var(--green-dk); }
+  .tip dt:first-child { margin-top: 0; }
+  .tip dd { margin: 2px 0 0; }
+  .tip .ex { color: var(--orange-dk); }
   .postcode { height: 460px; border: 2px solid var(--line); border-radius: 16px; overflow: hidden; margin-bottom: 12px; }
   .postcode[hidden] { display: none; }
   .find { flex: 0 0 auto; margin-bottom: 12px; border: 0; border-radius: 16px; padding: 0 18px; background: var(--green); color: #fff; font-size: 17px; cursor: pointer; }
@@ -113,10 +130,9 @@
     </div>
   </header>
 
-  <h2 class="jua">무엇을 드릴까요?</h2>
   <div class="items" id="items"></div>
 
-  <h2 class="jua">보내는 분</h2>
+  <h2 class="jua">보내는 분<button type="button" class="i" popovertarget="tip-sender" aria-label="보내는 분 입력 안내">i</button></h2>
   <input type="text" name="sender" placeholder="보내는 분 이름" required autocomplete="name" minlength="2" maxlength="10" pattern="[가-힣a-zA-Z]{2,10}" title="한글 또는 영문 2~10자">
   <input type="tel" name="senderPhone" class="tel" placeholder="보내는 분 연락처 (010-0000-0000)" required autocomplete="tel" inputmode="numeric" maxlength="13" pattern="01[016789]-[0-9]{3,4}-[0-9]{4}" title="휴대폰 번호 형식 (010-0000-0000)">
 
@@ -149,7 +165,7 @@
 <!-- 받는 분 한 명 분량. "+ 다른 분께도 보내기"를 누를 때마다 복제됨 -->
 <template id="tpl">
   <div class="recipient">
-    <h2 class="jua"><span>받는 분</span><button type="button" class="remove" aria-label="이 받는 분 빼기">×</button></h2>
+    <h2 class="jua"><span>받는 분</span><button type="button" class="i" popovertarget="tip-recipient" aria-label="받는 분 입력 안내">i</button><button type="button" class="remove" aria-label="이 받는 분 빼기">×</button></h2>
     <label class="same"><input type="checkbox"> 보내는 분과 같아요</label>
     <input type="text" name="name" placeholder="받는 분 이름" required autocomplete="name" minlength="2" maxlength="10" pattern="[가-힣a-zA-Z]{2,10}" title="한글 또는 영문 2~10자">
     <input type="tel" name="phone" class="tel" placeholder="받는 분 연락처 (010-0000-0000)" required autocomplete="tel" inputmode="numeric" maxlength="13" pattern="01[016789]-[0-9]{3,4}-[0-9]{4}" title="휴대폰 번호 형식 (010-0000-0000)">
@@ -165,12 +181,41 @@
       <span class="label">수량</span>
       <div class="ctl">
         <button type="button" class="minus" data-d="-1" aria-label="수량 줄이기"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
-        <output class="jua" name="qty">1</output>
+        <input type="number" class="jua" name="qty" value="1" min="1" max="99" required inputmode="numeric" aria-label="수량" onfocus="this.select()">
         <button type="button" class="plus" data-d="1" aria-label="수량 늘리기"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
       </div>
     </div>
   </div>
 </template>
+
+<!-- ⓘ 입력 안내 창. 문구는 여기서 고치면 됨 -->
+<div popover id="tip-sender" class="tip">
+  <h3 class="jua">보내는 분<button type="button" popovertarget="tip-sender" popovertargetaction="hide" aria-label="닫기">×</button></h3>
+  <dl>
+    <dt>이름</dt>
+    <dd>한글 또는 영문 2~10자 (띄어쓰기·숫자·기호 불가)</dd>
+    <dd><b>입금하실 때 예금주 이름과 같게</b> 적어 주세요. 이 이름으로 입금을 확인해요.</dd>
+    <dd class="ex">예) 홍길동</dd>
+    <dt>연락처</dt>
+    <dd>휴대폰 번호만 받아요. 숫자만 누르면 - 는 자동으로 들어가요.</dd>
+    <dd>주문에 문제가 있을 때 이 번호로 연락드려요.</dd>
+    <dd class="ex">예) 010-1234-5678</dd>
+  </dl>
+</div>
+<div popover id="tip-recipient" class="tip">
+  <h3 class="jua">받는 분<button type="button" popovertarget="tip-recipient" popovertargetaction="hide" aria-label="닫기">×</button></h3>
+  <dl>
+    <dt>이름</dt>
+    <dd>한글 또는 영문 2~10자. 택배 송장에 적히는 이름이에요.</dd>
+    <dd>직접 받으시면 '보내는 분과 같아요'를 체크하세요.</dd>
+    <dt>연락처</dt>
+    <dd>휴대폰 번호만 받아요. 택배 기사님이 배송할 때 연락하는 번호예요.</dd>
+    <dt>주소</dt>
+    <dd><b>'주소 찾기'</b>로 검색해서 골라 주세요 (직접 입력은 안 돼요). 도로명·건물명·지번 모두 검색돼요.</dd>
+    <dd>아파트·빌라는 상세 주소에 <b>동·호수</b>를 꼭 적어 주세요.</dd>
+    <dd class="ex">예) 101동 202호</dd>
+  </dl>
+</div>
 
 <section id="done">
   <img class="mascots" src="img/pair.png" alt="용용이와 용과" width="240">
@@ -268,7 +313,7 @@ form.addEventListener("click", e => {
   if (b.id === "add") addRecipient().querySelector("[name=name]").focus();
   else if (b.classList.contains("remove")) r.remove();
   else if (b.classList.contains("find")) openPostcode(r);
-  else if (b.dataset.d) { const o = r.querySelector("output"); o.value = Math.min(99, Math.max(1, +o.value + +b.dataset.d)); }
+  else if (b.dataset.d) { const q = r.querySelector("[name=qty]"); q.value = Math.min(99, Math.max(1, (+q.value || 0) + +b.dataset.d)); }
 });
 
 const hasUrl = s => /https?:\/\/|www\.|\.(com|net|kr|io|ly)\b/i.test(s);
