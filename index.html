@@ -77,6 +77,7 @@
   .card span:first-child { color: var(--muted); flex: 0 0 auto; }
   .card span:last-child { font-weight: 700; text-align: right; }
   .card .acct { display: block; margin-top: 12px; padding-top: 12px; border-top: 2px dashed var(--line); font-size: 18px; text-align: center; color: var(--orange-dk); }
+  .card .ship { display: block; margin-top: 8px; font-size: 13px; color: var(--muted); text-align: center; word-break: keep-all; }
   .home { background: var(--orange); border-radius: 22px; padding: 16px; width: 100%; max-width: 360px; box-shadow: 0 6px 0 var(--orange-dk); color: #fff; font-size: 18px; border: 0; cursor: pointer; }
   body.done #order { display: none; } body.done #done { display: flex; }
 </style>
@@ -89,7 +90,7 @@
     <div>
       <div class="brand gaegu">용용이네 &amp; 밧디글라</div>
       <h1 class="jua">제주 농장에서<br>바로 보내드려요</h1>
-      <p>주문하시면 담당자가 확인하고 문자로 안내드려요</p>
+      <p>입금 확인 후 2~5일 안에 택배로 보내드려요</p>
     </div>
   </header>
 
@@ -141,7 +142,7 @@
   <img class="mascots" src="img/pair.png" alt="용용이와 용과" width="240">
   <div>
     <h1 class="jua">주문이 접수됐어요!</h1>
-    <p>아래 계좌로 입금해 주시면<br>담당자가 확인한 뒤 안내 문자를 보내드려요</p>
+    <p>아래 계좌로 입금해 주세요<br>입금 확인 후 2~5일 안에 택배로 보내드려요</p>
   </div>
   <div class="card">
     <div><span>품목</span><span id="d-item"></span></div>
@@ -149,6 +150,7 @@
     <div><span>받는 분</span><span id="d-name"></span></div>
     <div><span>입금액</span><span id="d-total"></span></div>
     <strong class="acct jua" id="d-acct"></strong>
+    <small class="ship">입금 확인·배송 문자는 따로 보내드리지 않아요</small>
   </div>
   <button class="home jua" onclick="location.reload()">처음으로</button>
 </section>
