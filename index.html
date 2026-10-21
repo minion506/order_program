@@ -67,6 +67,18 @@
   .tip dt:first-child { margin-top: 0; }
   .tip dd { margin: 2px 0 0; }
   .tip .ex { color: var(--orange-dk); }
+  /* 첫 화면 발송 일정 안내 */
+  .ship-tip { width: min(90vw, 380px); text-align: center; }
+  .ship-tip .body { padding: 22px 20px 20px; }
+  .ship-tip img { width: 120px; height: auto; margin-top: -4px; }
+  .ship-tip h3 { justify-content: center; background: none; color: var(--green-dk); padding: 8px 0 4px; font-size: 26px; }
+  .ship-tip .sub { margin: 0 0 16px; padding: 0; font-size: 14px; color: var(--muted); }
+  .ship-tip ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; text-align: left; }
+  .ship-tip li { background: var(--cream); border-radius: 16px; padding: 14px 16px; font-size: 15px; line-height: 1.55; word-break: keep-all; }
+  .ship-tip li span { display: inline-block; font-size: 13px; color: var(--muted); }
+  .ship-tip li b { display: block; font-size: 18px; color: var(--orange-dk); }
+  .ship-tip li small { display: block; margin-top: 4px; font-size: 13px; color: var(--muted); }
+  .ship-tip .ok { width: 100%; margin-top: 18px; padding: 15px; font-size: 19px; }
   .tip p { margin: 0; padding: 20px; font-size: 16px; line-height: 1.6; text-align: center; word-break: keep-all; }
   .postcode { height: 460px; border: 2px solid var(--line); border-radius: 16px; overflow: hidden; margin-bottom: 12px; }
   .postcode[hidden] { display: none; }
@@ -219,6 +231,21 @@
   </dl>
 </div>
 
+<!-- 첫 화면 발송 일정 안내. 일정 바뀌면 문구만 고치고, 필요 없어지면 이 블록과 아래 showPopover 한 줄 삭제 -->
+<div popover id="ship" class="tip ship-tip">
+  <div class="body">
+    <img src="img/pair.png" alt="">
+    <h3 class="jua">발송 일정 안내</h3>
+    <p class="sub">제주 날씨에 맞춰 가장 좋은 날 따서 보내드려요</p>
+    <ol>
+      <li><span>10월 22일(목) 자정까지 주문 시</span><b>10월 23일(금) 발송 예정</b></li>
+      <li><span>10월 23일(금) 이후 주문 시</span><b>10월 30일(금) 전후 발송 예정</b>
+        <small>다음 주 태풍 소식이 있어, 날씨를 살피며 안전하게 수확한 뒤 보내드릴게요.</small></li>
+    </ol>
+    <button type="button" class="submit ok jua" popovertarget="ship" popovertargetaction="hide">확인했어요</button>
+  </div>
+</div>
+
 <!-- 준비된 수량이 다 팔리면 열리는 안내 창 (재고 탭 '총 판매 수량' 기준) -->
 <div popover id="soldout" class="tip">
   <h3 class="jua">판매 완료<button type="button" popovertarget="soldout" popovertargetaction="hide" aria-label="닫기">×</button></h3>
@@ -328,6 +355,8 @@ const hasUrl = s => /https?:\/\/|www\.|\.(com|net|kr|io|ly)\b/i.test(s);
 const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const dlg = document.getElementById("confirm");
 let pending;   // 확인 창에 떠 있는 주문
+
+document.getElementById("ship").showPopover();   // 판매 완료가 되면 판매 완료 창이 대신 뜸 (popover는 하나만 열림)
 
 // 품목별 남은 박스 (서버 doGet). 제한 없는 품목·불러오기 실패 시엔 없음 → 서버가 접수할 때 다시 확인
 const left = {};
