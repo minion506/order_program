@@ -48,6 +48,7 @@
     font: inherit; font-size: 16px; color: var(--brown); margin-bottom: 12px; }
   input::placeholder, textarea::placeholder { color: var(--ph); }
   textarea { min-height: 84px; resize: vertical; }
+  .memo-note { margin: -4px 4px 12px; font-size: 13px; line-height: 1.5; color: var(--orange-dk); word-break: keep-all; }
   input:read-only { background: #f7f2e6; }
   .same { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--muted); margin: -4px 0 12px 4px; cursor: pointer; }
   .same input { width: 20px; height: 20px; accent-color: var(--green); }
@@ -190,7 +191,8 @@
     <div class="postcode" hidden></div>
     <input type="text" name="address" placeholder="받는 분 주소 (주소 찾기를 눌러 주세요)" readonly required>
     <input type="text" name="address2" placeholder="상세 주소 (동·호수)" maxlength="40" autocomplete="off">
-    <textarea name="memo" placeholder="요청사항 (선택)" maxlength="200"></textarea>
+    <textarea name="memo" placeholder="요청사항 (선택) 예) 문 앞에 놓아 주세요" maxlength="200"></textarea>
+    <p class="memo-note">감귤은 날씨와 수확 일정에 맞춰 순서대로 보내드리고 있어요. 요청사항에 받으실 날짜를 적어 주셔도 맞춰 드리기 어려운 점 양해 부탁드려요.</p>
     <div class="qty">
       <span class="label">수량</span>
       <div class="ctl">
