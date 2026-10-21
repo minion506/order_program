@@ -60,13 +60,13 @@ const dayLabel = s => { const d = new Date(s + "T00:00:00"); return `${d.getMont
 fetch(API_URL).then(r => r.json()).then(({ items, days }) => {
   $("status").textContent = new Date().toLocaleString("ko-KR", { month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" }) + " 기준";
 
-  // 품목별: 남은 박스(재고 탭에 입력한 값) · 판매한 박스. 재고를 입력한 품목이 위로
+  // 품목별: 남은 박스(재고 탭 '총 판매 수량' − 판매한 박스) · 판매한 박스. 총 판매 수량을 입력한 품목이 위로
   items.sort((a, b) => (b.left !== null) - (a.left !== null));
   $("items").innerHTML = items.map(it => `
     <section class="card">
       <h3 class="jua">${esc(it.name)}</h3>
       <div class="tiles">
-        <div><span>남은 박스</span>${it.left === null ? `<b class="none">미입력</b><small>시트 '재고' 탭에 입력</small>` : `<b>${it.left.toLocaleString()}</b>`}</div>
+        <div><span>남은 박스</span>${it.left === null ? `<b class="none">미입력</b><small>시트 '재고' 탭에 총 판매 수량 입력</small>` : `<b>${it.left.toLocaleString()}</b><small>총 ${it.total.toLocaleString()}박스 중</small>`}</div>
         <div><span>판매한 박스</span><b>${it.sold.toLocaleString()}</b><small>입금 확인 ${it.paid.toLocaleString()}박스</small></div>
       </div>
     </section>`).join("");

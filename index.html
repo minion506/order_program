@@ -67,6 +67,7 @@
   .tip dt:first-child { margin-top: 0; }
   .tip dd { margin: 2px 0 0; }
   .tip .ex { color: var(--orange-dk); }
+  .tip p { margin: 0; padding: 20px; font-size: 16px; line-height: 1.6; text-align: center; word-break: keep-all; }
   .postcode { height: 460px; border: 2px solid var(--line); border-radius: 16px; overflow: hidden; margin-bottom: 12px; }
   .postcode[hidden] { display: none; }
   .find { flex: 0 0 auto; margin-bottom: 12px; border: 0; border-radius: 16px; padding: 0 18px; background: var(--green); color: #fff; font-size: 17px; cursor: pointer; }
@@ -218,6 +219,12 @@
   </dl>
 </div>
 
+<!-- 준비된 수량이 다 팔리면 열리는 안내 창 (재고 탭 '총 판매 수량' 기준) -->
+<div popover id="soldout" class="tip">
+  <h3 class="jua">판매 완료<button type="button" popovertarget="soldout" popovertargetaction="hide" aria-label="닫기">×</button></h3>
+  <p>준비된 수량이 모두 판매되었어요.<br>찾아주셔서 정말 감사합니다!<br>추가 수확 소식은 인스타 <a href="https://www.instagram.com/jeju_yy2ne/">@jeju_yy2ne</a> 에서 알려드릴게요.</p>
+</div>
+
 <section id="done">
   <img class="mascots" src="img/pair.png" alt="용용이와 용과" width="240">
   <div>
@@ -322,6 +329,24 @@ const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&
 const dlg = document.getElementById("confirm");
 let pending;   // 확인 창에 떠 있는 주문
 
+// 품목별 남은 박스 (서버 doGet). 제한 없는 품목·불러오기 실패 시엔 없음 → 서버가 접수할 때 다시 확인
+const left = {};
+const soldOut = () => {
+  const btn = document.getElementById("submit");
+  btn.disabled = true; btn.textContent = "판매 완료";
+  document.getElementById("soldout").showPopover();
+};
+fetch(API_URL).then(r => r.json()).then(({ items }) => {
+  items.forEach(it => { if (it.left !== null) left[it.name] = it.left; });
+  if (ITEMS.every(it => left[it.name] === 0)) soldOut();
+}).catch(() => {});
+// 남은 수량보다 많이 주문 → 0이면 판매 완료 창, 아니면 몇 박스까지 되는지 안내
+const overStock = (name, boxes) => {
+  if (!(name in left) || boxes <= left[name]) return false;
+  if (left[name] === 0) soldOut(); else alert(`지금 ${left[name]}박스까지 주문할 수 있어요. 수량을 줄여 주세요.`);
+  return true;
+};
+
 form.onsubmit = e => {
   e.preventDefault();
   const fd = new FormData(form);
@@ -337,6 +362,7 @@ form.onsubmit = e => {
   if (hasUrl(sender) || recipients.some(r => hasUrl(r.name) || hasUrl(r.memo))) { alert("요청사항에 링크는 넣을 수 없어요."); return; }
   const item = ITEMS.find(i => i.id === fd.get("item"));
   const boxes = recipients.reduce((s, r) => s + r.qty, 0);
+  if (overStock(item.name, boxes)) return;
   pending = { item, boxes, order: { sender, senderPhone, item: item.name, price: item.price, recipients } };   // 받는 분 한 명 = 시트 한 행
   document.getElementById("c-item").textContent = `${item.name} × ${boxes}`;
   document.getElementById("c-total").textContent = item.price ? won(item.price * boxes) : "[가격 미정]";
@@ -358,6 +384,8 @@ document.getElementById("send").onclick = async () => {
     const text = (await res.text()).trim();
     if (text !== "ok") throw new Error(text);           // 서버 검증 거절 ("rejected: ...")
   } catch (err) {
+    const m = err.message.match(/soldout:(\d+)/);   // 그 사이 다른 주문으로 수량이 줄어든 경우
+    if (m) { left[order.item] = +m[1]; btn.disabled = false; overStock(order.item, boxes); return; }
     alert(/dup/.test(err.message) ? "방금 같은 번호로 주문이 들어왔어요. 1분 뒤에 다시 시도해 주세요."
                                   : "주문이 접수되지 않았어요. 입력 내용을 확인하고 다시 시도해 주세요.");
     btn.disabled = false; return;
