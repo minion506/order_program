@@ -114,6 +114,8 @@
   .btns { display: flex; gap: 10px; }
   .btns button { flex: 1; margin: 0; padding: 16px; font-size: 18px; }
   .edit { border: 0; border-radius: 22px; background: #fff; box-shadow: 0 6px 0 var(--line); color: var(--muted); cursor: pointer; }
+  .edit:disabled { opacity: .6; }
+  .wait { margin: 12px 0 0; font-size: 14px; color: var(--orange-dk); text-align: center; word-break: keep-all; }
   @media (max-width: 480px) {   /* 휴대폰: 팝업 대신 전체 화면 */
     #confirm { width: 100%; max-width: none; height: 100vh; height: 100dvh; max-height: none; border-radius: 0; }
   }
@@ -173,6 +175,7 @@
         <button class="edit jua">수정하기</button>
         <button type="button" id="send" class="submit jua">이대로 주문하기</button>
       </div>
+      <p class="wait" id="wait" hidden>접수에 1분 정도 걸릴 수 있어요. 창을 닫지 말고 기다려 주세요.</p>
     </div>
   </form>
 </dialog>
@@ -403,23 +406,43 @@ form.onsubmit = e => {
   dlg.showModal();
 };
 
+// Apps Script는 주문을 저장하고도 응답이 30초 넘게 걸리거나 404·끊김으로 오는 일이 있음
+// → "ok"도 "rejected:"도 아니면 같은 주문을 다시 보냄. 서버가 같은 주문은 다시 저장하지 않고 "ok"를 돌려줌
+const post = async order => {
+  for (let i = 0; i < 3; i++) {
+    try {
+      // ponytail: text/plain로 보내야 Apps Script가 CORS preflight 없이 받음
+      const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(order), headers: { "Content-Type": "text/plain" } });
+      const text = (await res.text()).trim();
+      if (text === "ok" || text.startsWith("rejected:")) return text;
+    } catch {}
+  }
+  return "unknown";
+};
+
+// 접수 중에는 확인 창을 그대로 두고 버튼·ESC를 막음 (손님이 안 된 줄 알고 다시 주문하지 않게)
+const send = document.getElementById("send"), edit = dlg.querySelector(".edit");
+let sending = false;
+dlg.addEventListener("close", () => { if (sending) dlg.showModal(); });   // ESC·뒤로가기로 닫혀도 다시 띄움
+const setSending = on => { sending = send.disabled = edit.disabled = on; send.textContent = on ? "주문 접수 중…" : "이대로 주문하기"; document.getElementById("wait").hidden = !on; };
+
 // "이대로 주문하기"를 눌렀을 때만 전송. 수정하기·ESC는 입력을 그대로 둔 채 창만 닫힘
-document.getElementById("send").onclick = async () => {
-  dlg.close();
+send.onclick = async () => {
   const { item, boxes, order } = pending;
-  const btn = document.getElementById("submit");
-  btn.disabled = true;
-  try {
-    // ponytail: text/plain로 보내야 Apps Script가 CORS preflight 없이 받음
-    const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(order), headers: { "Content-Type": "text/plain" } });
-    const text = (await res.text()).trim();
-    if (text !== "ok") throw new Error(text);           // 서버 검증 거절 ("rejected: ...")
-  } catch (err) {
-    const m = err.message.match(/soldout:(\d+)/);   // 그 사이 다른 주문으로 수량이 줄어든 경우
-    if (m) { left[order.item] = +m[1]; btn.disabled = false; overStock(order.item, boxes); return; }
-    alert(/dup/.test(err.message) ? "방금 같은 번호로 주문이 들어왔어요. 1분 뒤에 다시 시도해 주세요."
-                                  : "주문이 접수되지 않았어요. 입력 내용을 확인하고 다시 시도해 주세요.");
-    btn.disabled = false; return;
+  setSending(true);
+  const text = await post(order);
+  setSending(false);
+  if (text === "unknown") {   // 창은 그대로 → 다시 눌러도 서버가 같은 주문은 한 번만 저장
+    alert("인터넷 연결이 불안정해 접수 결과를 확인하지 못했어요.\n'이대로 주문하기'를 한 번 더 눌러 주세요. 이미 접수된 주문이면 두 번 들어가지 않아요.");
+    return;
+  }
+  dlg.close();
+  if (text !== "ok") {   // 서버 검증 거절 ("rejected: ...")
+    const m = text.match(/soldout:(\d+)/);   // 그 사이 다른 주문으로 수량이 줄어든 경우
+    if (m) { left[order.item] = +m[1]; overStock(order.item, boxes); return; }
+    alert(/dup/.test(text) ? "방금 같은 번호로 주문이 들어왔어요. 1분 뒤에 다시 시도해 주세요."
+                           : "주문이 접수되지 않았어요. 입력 내용을 확인하고 다시 시도해 주세요.");
+    return;
   }
   document.getElementById("d-item").textContent = `${order.item} × ${boxes}`;
   document.getElementById("d-sender").textContent = `${order.sender} (${order.senderPhone})`;
