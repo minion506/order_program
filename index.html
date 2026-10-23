@@ -81,6 +81,7 @@
   .ship-tip li small { display: block; margin-top: 4px; font-size: 13px; color: var(--muted); }
   .ship-tip .ok { width: 100%; margin-top: 18px; padding: 15px; font-size: 19px; }
   .tip p { margin: 0; padding: 20px; font-size: 16px; line-height: 1.6; text-align: center; word-break: keep-all; }
+  @supports not selector(:popover-open) { [popover] { display: none; } }   /* popover 없는 브라우저: 안내 창이 페이지 맨 아래에 그냥 보이지 않게 */
   .postcode { height: 460px; border: 2px solid var(--line); border-radius: 16px; overflow: hidden; margin-bottom: 12px; }
   .postcode[hidden] { display: none; }
   .find { flex: 0 0 auto; margin-bottom: 12px; border: 0; border-radius: 16px; padding: 0 18px; background: var(--green); color: #fff; font-size: 17px; cursor: pointer; }
@@ -361,14 +362,15 @@ const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&
 const dlg = document.getElementById("confirm");
 let pending;   // 확인 창에 떠 있는 주문
 
-document.getElementById("ship").showPopover();   // 판매 완료가 되면 판매 완료 창이 대신 뜸 (popover는 하나만 열림)
+// ?.(): popover 없는 브라우저(iOS 17 미만)에서 여기서 멈추면 아래 주문 코드가 전부 안 붙음 → 안내 창만 건너뜀
+document.getElementById("ship").showPopover?.();   // 판매 완료가 되면 판매 완료 창이 대신 뜸 (popover는 하나만 열림)
 
 // 품목별 남은 박스 (서버 doGet). 제한 없는 품목·불러오기 실패 시엔 없음 → 서버가 접수할 때 다시 확인
 const left = {};
 const soldOut = () => {
   const btn = document.getElementById("submit");
   btn.disabled = true; btn.textContent = "판매 완료";
-  document.getElementById("soldout").showPopover();
+  document.getElementById("soldout").showPopover?.();
 };
 fetch(API_URL).then(r => r.json()).then(({ items }) => {
   items.forEach(it => { if (it.left !== null) left[it.name] = it.left; });
@@ -408,14 +410,16 @@ form.onsubmit = e => {
 
 // Apps Script는 주문을 저장하고도 응답이 30초 넘게 걸리거나 404·끊김으로 오는 일이 있음
 // → "ok"도 "rejected:"도 아니면 같은 주문을 다시 보냄. 서버가 같은 주문은 다시 저장하지 않고 "ok"를 돌려줌
+// 연결이 멈추면(앱 전환·와이파이↔LTE 등) fetch는 몇 분이고 기다림 → 한 번에 20초까지만 기다리고 다시 보냄 (최대 1분)
 const post = async order => {
   for (let i = 0; i < 3; i++) {
+    const ac = new AbortController(), timer = setTimeout(() => ac.abort(), 20000);
     try {
       // ponytail: text/plain로 보내야 Apps Script가 CORS preflight 없이 받음
-      const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(order), headers: { "Content-Type": "text/plain" } });
+      const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(order), headers: { "Content-Type": "text/plain" }, signal: ac.signal });
       const text = (await res.text()).trim();
       if (text === "ok" || text.startsWith("rejected:")) return text;
-    } catch {}
+    } catch {} finally { clearTimeout(timer); }
   }
   return "unknown";
 };
