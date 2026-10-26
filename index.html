@@ -288,6 +288,26 @@ const ITEMS = [   // 판매 안 하는 품목은 앞에 // 붙여서 숨김
 ];
 // ==================================
 
+// 화면 기록: 손님이 어디까지 했는지·화면 오류를 모아 서버 "화면기록" 탭으로 (주문 요청이 서버까지 못 간 경우도 보이게)
+// 아래 코드가 어디서 멈춰도 오류가 남도록 맨 위에 둠. 이름·연락처·주소는 넣지 않음 (주문 원문에 같은 방문 번호가 들어가 로그 탭과 짝지음)
+const visit = Math.random().toString(36).slice(2, 10);   // 방문 번호: 저장 안 함, 새로고침하면 새 번호
+const trail = [];
+const track = (ev, detail = "") => { if (trail.length < 200) trail.push([Math.round(performance.now() / 1000), ev, String(detail).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 200)]); };
+let sent = 0;
+const flush = () => {   // 매번 처음부터 전체를 보냄 → 한 번 못 보내도 다음에 채워짐. 서버는 방문당 한 줄로 덮어씀
+  if (trail.length < 2 || trail.length === sent) return;   // 열기만 하고 나간 방문은 안 보냄
+  sent = trail.length;
+  const body = JSON.stringify({ type: "trail", visit, ua: navigator.userAgent, events: trail });
+  if (!navigator.sendBeacon?.(API_URL, body)) fetch(API_URL, { method: "POST", body, keepalive: true, headers: { "Content-Type": "text/plain" } }).catch(() => {});
+};
+addEventListener("error", e => track("오류", `${e.message} (${e.lineno || "?"}줄)`));
+addEventListener("unhandledrejection", e => track("오류", e.reason?.message || e.reason));
+addEventListener("pagehide", flush);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flush(); });
+const alert_ = window.alert;
+window.alert = m => { track("안내", m); alert_.call(window, m); };   // 손님에게 뜬 안내창 문구도 기록
+track("열림");
+
 const month = new Date().getMonth() + 1;
 const won = n => n.toLocaleString("ko-KR") + "원";
 const seasonLabel = m => (m.length > 1 ? `${m[0]}~${m[m.length-1]}월` : `${m[0]}월`) + " 제철";
@@ -303,6 +323,7 @@ document.getElementById("items").innerHTML = ITEMS.map((it, i) => `
   </label>`).join("");
 
 const form = document.getElementById("order");
+form.addEventListener("invalid", e => track("입력 오류", e.target.name), true);   // 브라우저가 막은 칸 (형식·빈칸)
 const list = document.getElementById("recipients");
 const blocks = () => [...list.children];
 
@@ -369,7 +390,7 @@ document.getElementById("ship").showPopover?.();   // 판매 완료가 되면 �
 const left = {};
 const soldOut = () => {
   const btn = document.getElementById("submit");
-  btn.disabled = true; btn.textContent = "판매 완료";
+  btn.disabled = true; btn.textContent = "판매 완료"; track("판매 완료");
   document.getElementById("soldout").showPopover?.();
 };
 fetch(API_URL).then(r => r.json()).then(({ items }) => {
@@ -399,13 +420,14 @@ form.onsubmit = e => {
   const item = ITEMS.find(i => i.id === fd.get("item"));
   const boxes = recipients.reduce((s, r) => s + r.qty, 0);
   if (overStock(item.name, boxes)) return;
-  pending = { item, boxes, order: { sender, senderPhone, item: item.name, price: item.price, recipients } };   // 받는 분 한 명 = 시트 한 행
+  pending = { item, boxes, order: { sender, senderPhone, item: item.name, price: item.price, recipients, visit } };   // 받는 분 한 명 = 시트 한 행
   document.getElementById("c-item").textContent = `${item.name} × ${boxes}`;
   document.getElementById("c-total").textContent = item.price ? won(item.price * boxes) : "[가격 미정]";
   document.getElementById("c-card").innerHTML = `
     <div><span>보내는 분</span><span>${esc(sender)} (${senderPhone})</span></div>
     ${recipients.map((r, i) => `<p class="r"><b>받는 분${recipients.length > 1 ? " " + (i + 1) : ""} · ${esc(r.name)} ×${r.qty}</b>${r.phone}<br>${esc(r.address)}${r.memo ? "<br>요청: " + esc(r.memo) : ""}</p>`).join("")}`;
   dlg.showModal();
+  track("주문하기", `${boxes}박스 ${recipients.length}명`);
 };
 
 // Apps Script는 주문을 저장하고도 응답이 30초 넘게 걸리거나 404·끊김으로 오는 일이 있음
@@ -418,8 +440,9 @@ const post = async order => {
       // ponytail: text/plain로 보내야 Apps Script가 CORS preflight 없이 받음
       const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(order), headers: { "Content-Type": "text/plain" }, signal: ac.signal });
       const text = (await res.text()).trim();
+      track("응답", `${res.status} ${text}`);
       if (text === "ok" || text.startsWith("rejected:")) return text;
-    } catch {} finally { clearTimeout(timer); }
+    } catch { track("응답", ac.signal.aborted ? "20초 응답 없음" : "연결 끊김"); } finally { clearTimeout(timer); }
   }
   return "unknown";
 };
@@ -428,14 +451,17 @@ const post = async order => {
 const send = document.getElementById("send"), edit = dlg.querySelector(".edit");
 let sending = false;
 dlg.addEventListener("close", () => { if (sending) dlg.showModal(); });   // ESC·뒤로가기로 닫혀도 다시 띄움
+edit.addEventListener("click", () => track("수정하기"));
 const setSending = on => { sending = send.disabled = edit.disabled = on; send.textContent = on ? "주문 접수 중…" : "이대로 주문하기"; document.getElementById("wait").hidden = !on; };
 
 // "이대로 주문하기"를 눌렀을 때만 전송. 수정하기·ESC는 입력을 그대로 둔 채 창만 닫힘
 send.onclick = async () => {
   const { item, boxes, order } = pending;
+  track("전송");
   setSending(true);
   const text = await post(order);
   setSending(false);
+  track("결과", text); flush();   // 접수 결과가 나오면 바로 화면 기록 보냄
   if (text === "unknown") {   // 창은 그대로 → 다시 눌러도 서버가 같은 주문은 한 번만 저장
     alert("인터넷 연결이 불안정해 접수 결과를 확인하지 못했어요.\n'이대로 주문하기'를 한 번 더 눌러 주세요. 이미 접수된 주문이면 두 번 들어가지 않아요.");
     return;
