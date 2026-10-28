@@ -74,11 +74,11 @@
   .ship-tip img { width: 120px; height: auto; margin-top: -4px; }
   .ship-tip h3 { justify-content: center; background: none; color: var(--green-dk); padding: 8px 0 4px; font-size: 26px; }
   .ship-tip .sub { margin: 0 0 16px; padding: 0; font-size: 14px; color: var(--muted); }
-  .ship-tip ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; text-align: left; }
-  .ship-tip li { background: var(--cream); border-radius: 16px; padding: 14px 16px; font-size: 15px; line-height: 1.55; word-break: keep-all; }
-  .ship-tip li span { display: inline-block; font-size: 13px; color: var(--muted); }
-  .ship-tip li b { display: block; font-size: 18px; color: var(--orange-dk); }
-  .ship-tip li small { display: block; margin-top: 4px; font-size: 13px; color: var(--muted); }
+  .ship-tip .note { background: var(--cream); border-radius: 16px; padding: 16px 18px; }
+  .ship-tip .note p { margin: 0; padding: 0; font-size: 16px; line-height: 1.6; word-break: keep-all; }
+  .ship-tip .note p + p { margin-top: 10px; }
+  .ship-tip .note b, .ship-tip .note a { color: var(--orange-dk); }
+  .ship-tip .note a { font-weight: 700; white-space: nowrap; }
   .ship-tip .ok { width: 100%; margin-top: 18px; padding: 15px; font-size: 19px; }
   .tip p { margin: 0; padding: 20px; font-size: 16px; line-height: 1.6; text-align: center; word-break: keep-all; }
   @supports not selector(:popover-open) { [popover] { display: none; } }   /* popover 없는 브라우저: 안내 창이 페이지 맨 아래에 그냥 보이지 않게 */
@@ -237,16 +237,17 @@
   </dl>
 </div>
 
-<!-- 첫 화면 발송 일정 안내. 일정 바뀌면 문구만 고치고, 필요 없어지면 이 블록과 아래 showPopover 한 줄 삭제 -->
+<!-- 첫 화면 주문 안내. 내용 바뀌면 문구만 고치고, 필요 없어지면 이 블록과 아래 showPopover 한 줄 삭제 -->
 <div popover id="ship" class="tip ship-tip">
   <div class="body">
     <img src="img/pair.png" alt="">
-    <h3 class="jua">발송 일정 안내</h3>
+    <h3 class="jua">주문 전에 확인해 주세요</h3>
     <p class="sub">제주 날씨에 맞춰 가장 좋은 날 따서 보내드려요</p>
-    <ol>
-      <li><span>10월 23일(금) 이후 주문 시</span><b>10월 30일(금) 전후 발송 예정</b>
-        <small>다음 주 태풍 소식이 있어, 날씨를 살피며 안전하게 수확한 뒤 보내드릴게요.</small></li>
-    </ol>
+    <div class="note">
+      <p>주문 후 <b>2~5일 안에</b> 보내드려요.</p>
+      <p>기간 안에 받지 못하셨다면 인스타 DM <a href="https://www.instagram.com/jeju_yy2ne/">@jeju_yy2ne</a> 이나 문자 <a href="sms:01068885277">010-6888-5277</a> 로 연락 주세요.</p>
+      <p>입금 계좌번호는 <b>주문을 마치면</b> 다음 화면에 나와요.</p>
+    </div>
     <button type="button" class="submit ok jua" popovertarget="ship" popovertargetaction="hide">확인했어요</button>
   </div>
 </div>
@@ -383,7 +384,7 @@ const dlg = document.getElementById("confirm");
 let pending;   // 확인 창에 떠 있는 주문
 
 // ?.(): popover 없는 브라우저(iOS 17 미만)에서 여기서 멈추면 아래 주문 코드가 전부 안 붙음 → 안내 창만 건너뜀
-// document.getElementById("ship").showPopover?.();   // 발송 일정 팝업 꺼둠. 다시 띄우려면 앞의 // 지우기 (판매 완료 창이 뜨면 그쪽이 우선)
+document.getElementById("ship").showPopover?.();   // 판매 완료가 되면 판매 완료 창이 대신 뜸 (popover는 하나만 열림)
 
 // 품목별 남은 박스 (서버 doGet). 제한 없는 품목·불러오기 실패 시엔 없음 → 서버가 접수할 때 다시 확인
 const left = {};
