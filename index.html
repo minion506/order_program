@@ -79,6 +79,12 @@
   .ship-tip .note p + p { margin-top: 10px; }
   .ship-tip .note b, .ship-tip .note a { color: var(--orange-dk); }
   .ship-tip .note a { font-weight: 700; white-space: nowrap; }
+  /* 주문서 없는 입금자에게 연락 요청 (이름 가운데 글자는 꼭 가림). 해결되면 이 블록과 .ask HTML 삭제 */
+  .ship-tip .ask { margin: 0 0 20px; padding: 16px; border: 2px solid var(--orange); border-radius: 16px; background: #fff6ec; text-align: left; }
+  .ship-tip .ask h4 { margin: 0 0 6px; font-size: 19px; color: var(--orange-dk); }
+  .ship-tip .ask p { margin: 0; padding: 0; font-size: 15px; line-height: 1.55; text-align: left; }
+  .ship-tip .ask .go { display: flex; gap: 8px; margin-top: 12px; }
+  .ship-tip .ask .go a { flex: 1; padding: 10px 0; border-radius: 12px; background: var(--orange); color: #fff; text-align: center; text-decoration: none; font-size: 16px; }
   .ship-tip .ok { width: 100%; margin-top: 18px; padding: 15px; font-size: 19px; }
   .tip p { margin: 0; padding: 20px; font-size: 16px; line-height: 1.6; text-align: center; word-break: keep-all; }
   @supports not selector(:popover-open) { [popover] { display: none; } }   /* popover 없는 브라우저: 안내 창이 페이지 맨 아래에 그냥 보이지 않게 */
@@ -240,6 +246,11 @@
 <!-- 첫 화면 주문 안내. 내용 바뀌면 문구만 고치고, 필요 없어지면 이 블록과 아래 showPopover 한 줄 삭제 -->
 <div popover id="ship" class="tip ship-tip">
   <div class="body">
+    <div class="ask">
+      <h4 class="jua">송*욱 님, 연락 부탁드려요</h4>
+      <p>10월 23일(금) 이 이름으로 입금해 주셨는데 주문서가 확인되지 않아요. 받는 분 정보를 알려 주시면 바로 보내드릴게요.</p>
+      <div class="go"><a class="jua" href="https://www.instagram.com/jeju_yy2ne/">인스타 DM</a><a class="jua" href="sms:01068885277">문자 보내기</a></div>
+    </div>
     <img src="img/pair.png" alt="">
     <h3 class="jua">주문 전에 확인해 주세요</h3>
     <p class="sub">제주 날씨에 맞춰 가장 좋은 날 따서 보내드려요</p>
