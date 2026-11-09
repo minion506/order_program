@@ -34,6 +34,8 @@
   .item .price { font-size: 14px; font-weight: 500; color: var(--muted); }
   .item .season { align-self: flex-start; font-size: 13px; padding: 2px 8px; border-radius: 999px; background: #f2f0ea; color: var(--muted); }
   .item .season.now { background: #eaf6df; color: var(--green-dk); }
+  .item .tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .item .item-i { position: absolute; top: 12px; right: 12px; width: 26px; height: 26px; margin: 0; font: 700 16px/26px sans-serif; background: var(--orange); }   /* 품목 설명 ? (터치 영역 52px) */
   .qty { display: flex; align-items: center; justify-content: space-between; background: #fff; border-radius: 22px; padding: 14px 16px; box-shadow: 0 5px 0 var(--line); }
   .qty .label { font-size: 16px; font-weight: 700; }
   .qty .ctl { display: flex; align-items: center; gap: 16px; }
@@ -215,6 +217,10 @@
 </template>
 
 <!-- ⓘ 입력 안내 창. 문구는 여기서 고치면 됨 -->
+<div popover id="tip-mixed" class="tip">
+  <h3 class="jua">감귤 혼합과란?<button type="button" popovertarget="tip-mixed" popovertargetaction="hide" aria-label="닫기">×</button></h3>
+  <p>크기별로 고르지 않고 <b>작은 귤부터 큰 귤까지</b> 여러 크기를 섞어 담았어요.</p>
+</div>
 <div popover id="tip-sender" class="tip">
   <h3 class="jua">보내는 분<button type="button" popovertarget="tip-sender" popovertargetaction="hide" aria-label="닫기">×</button></h3>
   <dl>
@@ -296,6 +302,7 @@ const ITEMS = [   // 판매 안 하는 품목은 앞에 // 붙여서 숨김
   // { id: "peach",     name: "복숭아 2kg", price: 0, months: [6],        color: "#f7a1b5", bg: "#ffe3ea" },
   // { id: "dragon",    name: "레드용과 2kg", price: 0, months: [7,8,9,10], img: "img/dragon.png", bg: "#fde0ec" },
   { id: "tangerine", name: "감귤 10kg",  price: 30000, months: [11,12], color: "#f8b53a", bg: "#fff3c4" },
+  { id: "mixed",     name: "감귤 혼합과 10kg", note: "비상품", tip: "tip-mixed", price: 20000, months: [11,12], color: "#f8b53a", bg: "#fff3c4" },
 ];
 // ==================================
 
@@ -327,10 +334,11 @@ const fruitSvg = (c) => `<svg width="28" height="28" viewBox="0 0 24 24" fill="n
 document.getElementById("items").innerHTML = ITEMS.map((it, i) => `
   <label class="item">
     <input type="radio" name="item" value="${it.id}" ${i === 0 ? "checked" : ""} required>
+    ${it.tip ? `<button type="button" class="i item-i" popovertarget="${it.tip}" aria-label="${it.name} 설명">?</button>` : ""}
     <div class="icon" style="background:${it.bg}">${it.img ? `<img src="${it.img}" alt="" width="40" height="40" style="object-fit:contain">` : fruitSvg(it.color)}</div>
     <div class="name">${it.name}</div>
     <div class="price">${it.price ? won(it.price) : "[가격]원"}</div>
-    <div class="season ${it.months.includes(month) ? "now" : ""}">${seasonLabel(it.months)}</div>
+    <div class="tags"><span class="season ${it.months.includes(month) ? "now" : ""}">${seasonLabel(it.months)}</span>${it.note ? `<span class="season">${it.note}</span>` : ""}</div>
   </label>`).join("");
 
 const form = document.getElementById("order");
