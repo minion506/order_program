@@ -270,6 +270,10 @@
 </div>
 
 <!-- 준비된 수량이 다 팔리면 열리는 안내 창 (재고 탭 '총 판매 수량' 기준) -->
+<div popover id="closed" class="tip">
+  <h3 class="jua">주문 마감<button type="button" popovertarget="closed" popovertargetaction="hide" aria-label="닫기">×</button></h3>
+  <p>올해 귤 주문은 <b>11월 20일</b>에 마감했어요.<br>찾아주셔서 정말 감사합니다!<br>다음 수확 소식은 인스타 <a href="https://www.instagram.com/jeju_yy2ne/">@jeju_yy2ne</a> 에서 알려드릴게요.</p>
+</div>
 <div popover id="soldout" class="tip">
   <h3 class="jua">판매 완료<button type="button" popovertarget="soldout" popovertargetaction="hide" aria-label="닫기">×</button></h3>
   <p>준비된 수량이 모두 판매되었어요.<br>찾아주셔서 정말 감사합니다!<br>추가 수확 소식은 인스타 <a href="https://www.instagram.com/jeju_yy2ne/">@jeju_yy2ne</a> 에서 알려드릴게요.</p>
@@ -304,6 +308,7 @@ const ITEMS = [   // 판매 안 하는 품목은 앞에 // 붙여서 숨김
   // { id: "tangerine", name: "감귤 10kg",  price: 30000, months: [11,12], color: "#f8b53a", bg: "#fff3c4" },
   { id: "mixed",     name: "감귤 혼합과 10kg", tip: "tip-mixed", price: 20000, months: [11,12], color: "#f8b53a", bg: "#fff3c4" },
 ];
+const CLOSE_AT = new Date("2026-11-21T00:00:00+09:00");   // 이 시각부터 주문 마감 (11월 20일까지 받음). 서버 Code.gs CLOSE_AT도 같이 바꿈
 // ==================================
 
 // 화면 기록: 손님이 어디까지 했는지·화면 오류를 모아 서버 "화면기록" 탭으로 (주문 요청이 서버까지 못 간 경우도 보이게)
@@ -407,11 +412,12 @@ document.getElementById("ship").showPopover?.();   // 판매 완료가 되면 �
 
 // 품목별 남은 박스 (서버 doGet). 제한 없는 품목·불러오기 실패 시엔 없음 → 서버가 접수할 때 다시 확인
 const left = {};
-const soldOut = () => {
+const soldOut = (closed = false) => {   // closed: 주문 마감 날짜가 지남
   const btn = document.getElementById("submit");
-  btn.disabled = true; btn.textContent = "판매 완료"; track("판매 완료");
-  document.getElementById("soldout").showPopover?.();
+  btn.disabled = true; btn.textContent = closed ? "주문 마감" : "판매 완료"; track(closed ? "주문 마감" : "판매 완료");
+  document.getElementById(closed ? "closed" : "soldout").showPopover?.();
 };
+if (new Date() >= CLOSE_AT) soldOut(true);
 fetch(API_URL).then(r => r.json()).then(({ items }) => {
   items.forEach(it => { if (it.left !== null) left[it.name] = it.left; });
   if (ITEMS.every(it => left[it.name] === 0)) soldOut();
@@ -489,6 +495,7 @@ send.onclick = async () => {
   if (text !== "ok") {   // 서버 검증 거절 ("rejected: ...")
     const m = text.match(/soldout:(\d+)/);   // 그 사이 다른 주문으로 수량이 줄어든 경우
     if (m) { left[order.item] = +m[1]; overStock(order.item, boxes); return; }
+    if (/closed/.test(text)) { soldOut(true); return; }   // 화면을 열어 둔 채 마감 시각이 지남
     alert(/dup/.test(text) ? "방금 같은 번호로 주문이 들어왔어요. 1분 뒤에 다시 시도해 주세요."
                            : "주문이 접수되지 않았어요. 입력 내용을 확인하고 다시 시도해 주세요.");
     return;
