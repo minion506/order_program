@@ -272,7 +272,7 @@
 <!-- 준비된 수량이 다 팔리면 열리는 안내 창 (재고 탭 '총 판매 수량' 기준) -->
 <div popover id="closed" class="tip">
   <h3 class="jua">주문 마감<button type="button" popovertarget="closed" popovertargetaction="hide" aria-label="닫기">×</button></h3>
-  <p>올해 귤 주문은 <b>11월 20일</b>에 마감했어요.<br>찾아주셔서 정말 감사합니다!<br>다음 수확 소식은 인스타 <a href="https://www.instagram.com/jeju_yy2ne/">@jeju_yy2ne</a> 에서 알려드릴게요.</p>
+  <p>올해 귤 주문은 <b>11월 25일</b>에 마감했어요.<br>찾아주셔서 정말 감사합니다!<br>다음 수확 소식은 인스타 <a href="https://www.instagram.com/jeju_yy2ne/">@jeju_yy2ne</a> 에서 알려드릴게요.</p>
 </div>
 <div popover id="soldout" class="tip">
   <h3 class="jua">판매 완료<button type="button" popovertarget="soldout" popovertargetaction="hide" aria-label="닫기">×</button></h3>
@@ -308,7 +308,7 @@ const ITEMS = [   // 판매 안 하는 품목은 앞에 // 붙여서 숨김
   // { id: "tangerine", name: "감귤 10kg",  price: 30000, months: [11,12], color: "#f8b53a", bg: "#fff3c4" },
   { id: "mixed",     name: "감귤 혼합과 10kg", tip: "tip-mixed", price: 20000, months: [11,12], color: "#f8b53a", bg: "#fff3c4" },
 ];
-const CLOSE_AT = new Date("2026-11-21T00:00:00+09:00");   // 이 시각부터 주문 마감 (11월 20일까지 받음). 서버 Code.gs CLOSE_AT도 같이 바꿈
+const CLOSE_AT = new Date("2026-11-26T00:00:00+09:00");   // 이 시각부터 주문 마감 (11월 25일까지 받음). 서버 Code.gs CLOSE_AT도 같이 바꿈
 // ==================================
 
 // 화면 기록: 손님이 어디까지 했는지·화면 오류를 모아 서버 "화면기록" 탭으로 (주문 요청이 서버까지 못 간 경우도 보이게)
