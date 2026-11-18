@@ -87,6 +87,13 @@
   .ship-tip .ask p { margin: 0; padding: 0; font-size: 15px; line-height: 1.55; text-align: left; }
   .ship-tip .ask .go { display: flex; gap: 8px; margin-top: 12px; }
   .ship-tip .ask .go a { flex: 1; padding: 10px 0; border-radius: 12px; background: var(--orange); color: #fff; text-align: center; text-decoration: none; font-size: 16px; }
+  /* 다음 판매 예고 (1월 한라봉) */
+  .halla { display: flex; align-items: center; gap: 12px; margin: 14px 0 0; padding: 12px 14px; border-radius: 16px; background: #ffe8d0; text-align: left; }
+  .tip .halla img { width: 48px; height: auto; margin: 0; flex: none; }
+  .halla b { display: block; font-size: 19px; color: var(--orange-dk); font-weight: 400; }
+  .halla span { display: block; font-size: 14px; line-height: 1.5; color: var(--muted); word-break: keep-all; }
+  .halla a { color: var(--orange-dk); font-weight: 700; white-space: nowrap; }
+  #closed .halla { margin: 0 20px 20px; }
   .ship-tip .ok { width: 100%; margin-top: 18px; padding: 15px; font-size: 19px; }
   .tip p { margin: 0; padding: 20px; font-size: 16px; line-height: 1.6; text-align: center; word-break: keep-all; }
   @supports not selector(:popover-open) { [popover] { display: none; } }   /* popover 없는 브라우저: 안내 창이 페이지 맨 아래에 그냥 보이지 않게 */
@@ -265,6 +272,7 @@
       <p>기간 안에 받지 못하셨다면 인스타 DM <a href="https://www.instagram.com/jeju_yy2ne/">@jeju_yy2ne</a> 이나 문자 <a href="sms:01068885277">010-6888-5277</a> 로 연락 주세요.</p>
       <p>입금 계좌번호는 <b>주문을 마치면</b> 다음 화면에 나와요.</p>
     </div>
+    <div class="halla"><img src="img/orange.png" alt=""><div><b class="jua">1월에 한라봉으로 만나요!</b><span>새콤달콤 한라봉 소식은 인스타 <a href="https://www.instagram.com/jeju_yy2ne/">@jeju_yy2ne</a> 에서 알려드릴게요</span></div></div>
     <button type="button" class="submit ok jua" popovertarget="ship" popovertargetaction="hide">확인했어요</button>
   </div>
 </div>
@@ -272,7 +280,8 @@
 <!-- 준비된 수량이 다 팔리면 열리는 안내 창 (재고 탭 '총 판매 수량' 기준) -->
 <div popover id="closed" class="tip">
   <h3 class="jua">주문 마감<button type="button" popovertarget="closed" popovertargetaction="hide" aria-label="닫기">×</button></h3>
-  <p>올해 귤 주문은 <b>11월 25일</b>에 마감했어요.<br>찾아주셔서 정말 감사합니다!<br>다음 수확 소식은 인스타 <a href="https://www.instagram.com/jeju_yy2ne/">@jeju_yy2ne</a> 에서 알려드릴게요.</p>
+  <p>올해 귤 주문은 <b>11월 25일</b>에 마감했어요.<br>찾아주셔서 정말 감사합니다!</p>
+  <div class="halla"><img src="img/orange.png" alt=""><div><b class="jua">1월에 한라봉으로 만나요!</b><span>새콤달콤 한라봉 소식은 인스타 <a href="https://www.instagram.com/jeju_yy2ne/">@jeju_yy2ne</a> 에서 알려드릴게요</span></div></div>
 </div>
 <div popover id="soldout" class="tip">
   <h3 class="jua">판매 완료<button type="button" popovertarget="soldout" popovertargetaction="hide" aria-label="닫기">×</button></h3>
