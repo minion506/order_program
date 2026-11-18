@@ -75,18 +75,19 @@
   .ship-tip .body { padding: 22px 20px 20px; }
   .ship-tip img { width: 120px; height: auto; margin-top: -4px; }
   .ship-tip h3 { justify-content: center; background: none; color: var(--green-dk); padding: 8px 0 4px; font-size: 26px; }
-  .ship-tip .sub { margin: 0 0 16px; padding: 0; font-size: 14px; color: var(--muted); }
-  .ship-tip .note { background: var(--cream); border-radius: 16px; padding: 16px 18px; }
+  .ship-tip .note { margin-top: 12px; background: var(--cream); border-radius: 16px; padding: 16px 18px; }
   .ship-tip .note p { margin: 0; padding: 0; font-size: 16px; line-height: 1.6; word-break: keep-all; }
   .ship-tip .note p + p { margin-top: 10px; }
   .ship-tip .note b, .ship-tip .note a { color: var(--orange-dk); }
   .ship-tip .note a { font-weight: 700; white-space: nowrap; }
+  .ship-tip .note hr { margin: 14px 0; border: 0; border-top: 2px dashed var(--line); }
+  .ship-tip .note .halla { margin: 0; padding: 0; background: none; }
   /* 주문서 없는 입금자에게 연락 요청 (이름 가운데 글자는 꼭 가림). 해결되면 이 블록과 .ask HTML 삭제 */
-  .ship-tip .ask { margin: 0 0 20px; padding: 16px; border: 2px solid var(--orange); border-radius: 16px; background: #fff6ec; text-align: left; }
-  .ship-tip .ask h4 { margin: 0 0 6px; font-size: 19px; color: var(--orange-dk); }
-  .ship-tip .ask p { margin: 0; padding: 0; font-size: 15px; line-height: 1.55; text-align: left; }
-  .ship-tip .ask .go { display: flex; gap: 8px; margin-top: 12px; }
-  .ship-tip .ask .go a { flex: 1; padding: 10px 0; border-radius: 12px; background: var(--orange); color: #fff; text-align: center; text-decoration: none; font-size: 16px; }
+  .ship-tip .ask { margin: 0 0 14px; padding: 12px 14px; border: 2px solid var(--orange); border-radius: 14px; background: #fff6ec; text-align: left; }
+  .ship-tip .ask b { display: block; font-size: 17px; font-weight: 400; color: var(--orange-dk); }
+  .ship-tip .ask span { display: block; margin-top: 2px; font-size: 14px; line-height: 1.5; word-break: keep-all; }
+  .ship-tip .go { display: flex; gap: 8px; margin-top: 12px; }
+  .ship-tip .go a { flex: 1; padding: 10px 0; border-radius: 12px; background: var(--orange); color: #fff; text-align: center; text-decoration: none; font-size: 16px; }
   /* 다음 판매 예고 (1월 한라봉) */
   .halla { display: flex; align-items: center; gap: 12px; margin: 14px 0 0; padding: 12px 14px; border-radius: 16px; background: #ffe8d0; text-align: left; }
   .tip .halla img { width: 48px; height: auto; margin: 0; flex: none; }
@@ -259,20 +260,16 @@
 <!-- 첫 화면 주문 안내. 내용 바뀌면 문구만 고치고, 필요 없어지면 이 블록과 아래 showPopover 한 줄 삭제 -->
 <div popover id="ship" class="tip ship-tip">
   <div class="body">
-    <div class="ask">
-      <h4 class="jua">송*욱 님, 연락 부탁드려요</h4>
-      <p>10월 23일(금) 이 이름으로 입금해 주셨는데 주문서가 확인되지 않아요. 받는 분 정보를 알려 주시면 바로 보내드릴게요.</p>
-      <div class="go"><a class="jua" href="https://www.instagram.com/jeju_yy2ne/">인스타 DM</a><a class="jua" href="sms:01068885277">문자 보내기</a></div>
-    </div>
+    <div class="ask"><b class="jua">송*욱 님, 연락 부탁드려요</b><span>10월 23일(금) 입금해 주셨는데 주문서가 없어요. 아래 버튼으로 받는 분 정보를 알려 주세요.</span></div>
     <img src="img/pair.png" alt="">
     <h3 class="jua">주문 전에 확인해 주세요</h3>
-    <p class="sub">제주 날씨에 맞춰 가장 좋은 날 따서 보내드려요</p>
     <div class="note">
       <p>주문 후 <b>2~5일 안에</b> 보내드려요.</p>
-      <p>기간 안에 받지 못하셨다면 인스타 DM <a href="https://www.instagram.com/jeju_yy2ne/">@jeju_yy2ne</a> 이나 문자 <a href="sms:01068885277">010-6888-5277</a> 로 연락 주세요.</p>
       <p>입금 계좌번호는 <b>주문을 마치면</b> 다음 화면에 나와요.</p>
+      <hr>
+      <div class="halla"><img src="img/orange.png" alt=""><div><b class="jua">1월에 한라봉으로 만나요!</b><span>배송이 늦거나 궁금한 점, 한라봉 소식도 편하게 물어봐 주세요</span></div></div>
+      <div class="go"><a class="jua" href="https://www.instagram.com/jeju_yy2ne/">인스타 DM</a><a class="jua" href="sms:01068885277">문자 보내기</a></div>
     </div>
-    <div class="halla"><img src="img/orange.png" alt=""><div><b class="jua">1월에 한라봉으로 만나요!</b><span>새콤달콤 한라봉 소식은 인스타 <a href="https://www.instagram.com/jeju_yy2ne/">@jeju_yy2ne</a> 에서 알려드릴게요</span></div></div>
     <button type="button" class="submit ok jua" popovertarget="ship" popovertargetaction="hide">확인했어요</button>
   </div>
 </div>
