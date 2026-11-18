@@ -61,7 +61,7 @@
     font: 700 12px/18px Georgia, serif; text-align: center; cursor: pointer; vertical-align: middle; }
   .i::after { content: ""; position: absolute; inset: -13px; }   /* 손가락으로 누르기 쉽게 터치 영역 44px */
   .recipient h2 .i { margin-right: auto; }                         /* 빼기(×) 버튼은 오른쪽 끝에 그대로 */
-  .tip { border: 0; border-radius: 18px; padding: 0; width: min(88vw, 360px); background: #fff; color: var(--brown); box-shadow: 0 8px 0 var(--line); }
+  .tip { border: 0; border-radius: 18px; padding: 0; width: min(88vw, 360px); max-height: calc(100dvh - 24px); overflow-y: auto; overscroll-behavior: contain; background: #fff; color: var(--brown); box-shadow: 0 8px 0 var(--line); }
   .tip::backdrop { background: rgba(43, 29, 18, .45); }
   .tip h3 { margin: 0; padding: 14px 12px 14px 20px; background: var(--green-dk); color: #fff; font-size: 18px; display: flex; justify-content: space-between; align-items: center; }
   .tip h3 button { width: 36px; height: 36px; border: 0; background: none; color: #fff; font-size: 26px; line-height: 1; cursor: pointer; }
